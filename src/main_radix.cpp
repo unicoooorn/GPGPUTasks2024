@@ -64,6 +64,8 @@ int main(int argc, char **argv) {
     prefix_stage2.compile();
     ocl::Kernel radix_sort(radix_kernel, radix_kernel_length, "radix_sort");
     radix_sort.compile();
+    ocl::Kernel transpose(radix_kernel, radix_kernel_length, "matrix_transpose");
+    transpose.compile();
 
     gpu::gpu_mem_32u as_gpu;
     as_gpu.resizeN(n);
@@ -78,6 +80,10 @@ int main(int argc, char **argv) {
     unsigned int total_counters_count = (1 << nbits) * (n / workgroup_size);
     gpu::gpu_mem_32u counters_gpu;
     counters_gpu.resizeN(total_counters_count);
+
+    gpu::gpu_mem_32u counters_gpu_t;
+    counters_gpu_t.resizeN(total_counters_count);
+
     gpu::gpu_mem_32u prefix_sums_gpu;
     prefix_sums_gpu.resizeN(total_counters_count);
     std::vector<unsigned int> tmp(total_counters_count, 0);
@@ -98,10 +104,12 @@ int main(int argc, char **argv) {
                 count_by_wg.exec(
                         gpu::WorkSize(workgroup_size, n),
                         as_gpu,
-                        counters_gpu,
+                        counters_gpu_t,
                         bit_shift
                 );
                 t_count.nextLap();
+
+                transpose.exec(gpu::WorkSize(8, 8, (1 << nbits), (n / workgroup_size)), counters_gpu_t, counters_gpu, (n / workgroup_size), (1 << nbits));
 
                 t_prefix.restart();
                 int step = 1;

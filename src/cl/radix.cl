@@ -17,10 +17,9 @@ unsigned int get_elem_part(unsigned int val, unsigned int bit_shift) {
 __kernel void count_by_wg(__global unsigned int *as, __global unsigned int *g_counters, unsigned int bit_shift) {
     __local unsigned int counters[1 << nbits];
 
-    if (get_local_id(0) == 0) {
-        for (int i = 0; i < (1 << nbits); i++) {
-            counters[i] = 0;
-        }
+    int lid = get_local_id(0);
+    if (lid < (1 << nbits)) {
+        counters[lid] = 0;
     }
 
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -31,12 +30,22 @@ __kernel void count_by_wg(__global unsigned int *as, __global unsigned int *g_co
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if (get_local_id(0) == 0) {
-        for (int i = 0; i < 1 << nbits; i++) {
-            g_counters[i * get_num_groups(0) + get_group_id(0)] = counters[i];
-        }
+    if (lid < (1 << nbits)) {
+        g_counters[get_group_id(0) * (1 << nbits) + lid] = counters[lid];
     }
+
     return;
+}
+
+__kernel void matrix_transpose(
+        __global float *a,
+        __global float *at,
+        unsigned int m,
+        unsigned int k
+) {
+    int i = get_global_id(0);
+    int j = get_global_id(1);
+    at[i * m + j] = a[j * k + i];
 }
 
 __kernel void prefix_stage1(__global unsigned int *as, unsigned int step, unsigned int n) {
