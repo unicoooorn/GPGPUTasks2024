@@ -37,18 +37,20 @@ __kernel void nbody_calculate_force_global(
 
         float dx = x1 - x0;
         float dy = y1 - y0;
+        float dr2 = max(100.f, dx * dx + dy * dy);
 
-        float r2 = max(100.0f, pow(dx, 2) + pow(dy, 2));
-        float r = sqrt(r2);
+        float dr2_inv = 1.f / dr2;
+        float dr_inv = sqrt(dr2_inv);
 
-        float f = m1 / r2;
+        float ex = dx * dr_inv;
+        float ey = dy * dr_inv;
 
-        dvx[i] += f * dx / r;
-        dvy[i] += f * dy / r;
+        float fx = ex * dr2_inv * GRAVITATIONAL_FORCE;
+        float fy = ey * dr2_inv * GRAVITATIONAL_FORCE;
+
+        dvx[i] += m1 * fx;
+        dvy[i] += m1 * fy;
     }
-
-    dvx[i] *= GRAVITATIONAL_FORCE;
-    dvy[i] *= GRAVITATIONAL_FORCE;
 }
 
 __kernel void nbody_integrate(
