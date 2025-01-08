@@ -1990,10 +1990,10 @@ TEST (LBVH, Nbody) {
     bool evaluate_precision = (NBODY_INITIAL_STATE_COMPLEXITY < 2) && EVALUATE_PRECISION;
 
 #if NBODY_INITIAL_STATE_COMPLEXITY < 2
-//    nbody(false, evaluate_precision, 0); // cpu naive
-//    nbody(false, evaluate_precision, 1); // gpu naive
+    nbody(false, evaluate_precision, 0); // cpu naive
+    nbody(false, evaluate_precision, 1); // gpu naive
 #endif
-//    nbody(false, evaluate_precision, 2); // cpu lbvh
+    nbody(false, evaluate_precision, 2); // cpu lbvh
     nbody(false, evaluate_precision, 3); // gpu lbvh
 }
 
