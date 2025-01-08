@@ -126,8 +126,6 @@ morton_t zOrder(float fx, float fy, int i){
     int x = fx + 0.5;
     int y = fy + 0.5;
 
-    // у нас нет эксепшенов, но можно писать коды ошибок просто в консоль, и следить чтобы вывод был пустой
-
     if (x < 0 || x >= (1 << NBITS_PER_DIM)) {
         printf("098245490432590890\n");
         return 0;
@@ -142,7 +140,6 @@ morton_t zOrder(float fx, float fy, int i){
 
     morton_t morton_code = 2 * spread_bits_x + spread_bits_y;
 
-    // augmentation
     return (morton_code << 32) | i;
 }
 
@@ -286,7 +283,6 @@ void initLBVHNode(__global struct Node *nodes, int i_node, __global const morton
     }
 
     int i_begin = 0, i_end = N, bit_index = NBITS - 1;
-    // если рассматриваем не корень, то нужно найти зону ответственности ноды и самый старший бит, с которого надо начинать поиск разреза
     if (i_node) {
         findRegion(&i_begin, &i_end, &bit_index, codes, N, i_node);
     }
@@ -432,7 +428,6 @@ void calculateForce(float x0, float y0, float m0, __global const struct Node *no
             continue;
         }
 
-        // если запрос содержится и а левом и в правом ребенке - то они в одном пикселе
         {
             __global const struct Node *left = &nodes[node->child_left];
             __global const struct Node *right = &nodes[node->child_right];
